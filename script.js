@@ -158,17 +158,7 @@ function render(isStructural = false, changedId = null) {
         <div class="points-area">
           <div class="points-display" id="pts-${team.id}">${team.points}</div>
           <div class="points-label">points</div>
-          <div class="point-controls">
-            <button class="ctrl-btn"       onclick="changePoints(${team.id},+1,event)"  title="+1">+</button>
-            <button class="ctrl-btn"       onclick="changePoints(${team.id},+10,event)" title="+10">⬆</button>
-            <button class="ctrl-btn minus" onclick="changePoints(${team.id},-1,event)"  title="-1">−</button>
-            <button class="ctrl-btn del"   onclick="removeTeam(${team.id})"             title="Remove">✕</button>
-          </div>
-          <div class="manual-add">
-            <input class="manual-input" type="number" id="manual-${team.id}" placeholder="±pts"
-              onkeydown="if(event.key==='Enter') applyPoints(${team.id},event)" />
-            <button class="apply-btn" onclick="applyPoints(${team.id},event)">APPLY</button>
-          </div>
+          
         </div>
       </div>`;
   }).join('');
