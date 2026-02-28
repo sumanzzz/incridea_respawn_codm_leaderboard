@@ -1,45 +1,60 @@
-let teams = JSON.parse(localStorage.getItem('apex-teams') || '[]');
-let idCounter = parseInt(localStorage.getItem('apex-counter') || '0');
+let teams = [];
+let idCounter = 0;
 let prevOrder = [];
-
+const API_URL = "https://script.google.com/macros/s/AKfycbwatUeWFm1RvsuB4iESaiikDJuZH-HBoiCViHfhy9blV3F7n5BAsKblEL-i6HznOpko3g/exec";
 // ── Persistence ──────────────────────────────────────────────────────────────
 
-function save() {
-  localStorage.setItem('apex-teams', JSON.stringify(teams));
-  localStorage.setItem('apex-counter', String(idCounter));
+async function fetchTeams() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+
+    teams = data.map((t, index) => ({
+      id: index + 1,
+      teamId: String(t["Team ID"]),
+      name: t["Team Name"],
+      points: Number(t["Total Points"]) || 0,
+      added: index
+    }));
+
+    render(true);
+
+  } catch (err) {
+    console.error("Fetch failed:", err);
+  }
 }
 
 // ── Team Management ───────────────────────────────────────────────────────────
 
-function addTeam() {
-  const idEl   = document.getElementById('teamId');
-  const nameEl = document.getElementById('teamName');
-  const ptsEl  = document.getElementById('teamPoints');
-  const teamId = idEl.value.trim();
-  const name   = nameEl.value.trim();
-  const pts    = Math.max(0, parseInt(ptsEl.value) || 0);
+// function addTeam() {
+//   const idEl   = document.getElementById('teamId');
+//   const nameEl = document.getElementById('teamName');
+//   const ptsEl  = document.getElementById('teamPoints');
+//   const teamId = idEl.value.trim();
+//   const name   = nameEl.value.trim();
+//   const pts    = Math.max(0, parseInt(ptsEl.value) || 0);
 
-  if (!teamId) { idEl.focus(); shake(idEl); return; }
-  if (!name)   { nameEl.focus(); shake(nameEl); return; }
+//   if (!teamId) { idEl.focus(); shake(idEl); return; }
+//   if (!name)   { nameEl.focus(); shake(nameEl); return; }
 
-  teams.push({ id: ++idCounter, teamId, name, points: pts, added: Date.now() });
+//   teams.push({ id: ++idCounter, teamId, name, points: pts, added: Date.now() });
 
-  idEl.value   = '';
-  nameEl.value = '';
-  ptsEl.value  = '';
-  idEl.focus();
-  save();
-  render(true);
-}
+//   idEl.value   = '';
+//   nameEl.value = '';
+//   ptsEl.value  = '';
+//   idEl.focus();
+//   save();
+//   render(true);
+// }
 
-function changePoints(id, delta, event) {
-  const t = teams.find(t => t.id === id);
-  if (!t) return;
-  t.points = Math.max(0, t.points + delta);
-  save();
-  spawnDelta(event, delta);
-  render(false, id);
-}
+// function changePoints(id, delta, event) {
+//   const t = teams.find(t => t.id === id);
+//   if (!t) return;
+//   t.points = Math.max(0, t.points + delta);
+//   save();
+//   spawnDelta(event, delta);
+//   render(false, id);
+// }
 
 function applyPoints(id, event) {
   const input = document.getElementById(`manual-${id}`);
@@ -50,11 +65,11 @@ function applyPoints(id, event) {
   input.value = '';
 }
 
-function removeTeam(id) {
-  teams = teams.filter(t => t.id !== id);
-  save();
-  render(true);
-}
+// function removeTeam(id) {
+//   teams = teams.filter(t => t.id !== id);
+//   save();
+//   render(true);
+// }
 
 // ── Animations & Effects ──────────────────────────────────────────────────────
 
@@ -215,8 +230,27 @@ function escHtml(str) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-document.getElementById('teamId').addEventListener('keydown', e => { if (e.key === 'Enter') addTeam(); });
-document.getElementById('teamName').addEventListener('keydown', e => { if (e.key === 'Enter') addTeam(); });
-document.getElementById('teamPoints').addEventListener('keydown', e => { if (e.key === 'Enter') addTeam(); });
+const idInput = document.getElementById('teamId');
+const nameInput = document.getElementById('teamName');
+const ptsInput = document.getElementById('teamPoints');
 
-render(true);
+if (idInput) {
+  idInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTeam();
+  });
+}
+
+if (nameInput) {
+  nameInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTeam();
+  });
+}
+
+if (ptsInput) {
+  ptsInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTeam();
+  });
+}
+
+fetchTeams();
+setInterval(fetchTeams, 10000); // refresh every 10 sec
