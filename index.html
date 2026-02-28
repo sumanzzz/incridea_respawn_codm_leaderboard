@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Respawn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <div class="container">
+    <header class="header">
+      <div class="header-label">Incridea</div>
+      <h1>Respawn - CODM</h1>
+      <div class="header-line"></div>
+    </header>
+
+    <div class="add-panel">
+      <div class="input-wrap" style="max-width:120px">
+        <label>Team ID</label>
+        <input type="text" id="teamId" placeholder="e.g. T-01" maxlength="12" />
+      </div>
+      <div class="input-wrap">
+        <label>Team Name</label>
+        <input type="text" id="teamName" placeholder="e.g. Storm Ravens" maxlength="24" />
+      </div>
+      <div class="input-wrap" style="max-width:120px">
+        <label>Starting Pts</label>
+        <input type="number" id="teamPoints" placeholder="0" min="0" max="99999" />
+      </div>
+      <button class="add-btn" onclick="addTeam()">+ ADD</button>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-num" id="statTeams">0</span>
+        <span class="stat-label">Teams</span>
+      </div>
+    </div>
+
+    <div class="leaderboard" id="leaderboard">
+      <div class="empty-state">
+        <span class="empty-icon">🏆</span>
+        <p>Add teams to begin the competition</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
