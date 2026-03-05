@@ -15,7 +15,7 @@ function toggleWheel() {
     overlay.classList.remove('visible');
     pageWrap.classList.remove('blurred');
     btn.classList.remove('active');
-    btn.querySelector('.wheel-fab-label').textContent = 'SPIN';
+    btn.querySelector('.wheel-fab-label').textContent = 'MAP & MODE';
   } else {
     overlay.classList.add('visible');
     pageWrap.classList.add('blurred');
