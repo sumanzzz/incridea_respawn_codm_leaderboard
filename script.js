@@ -158,7 +158,6 @@ function render(isStructural = false, changedId = null) {
         <div class="points-area">
           <div class="points-display" id="pts-${team.id}">${team.points}</div>
           <div class="points-label">points</div>
-          
         </div>
       </div>`;
   }).join('');
