@@ -2,80 +2,61 @@ let teams = [];
 let idCounter = 0;
 let prevOrder = [];
 const API_URL = "https://script.google.com/macros/s/AKfycbwatUeWFm1RvsuB4iESaiikDJuZH-HBoiCViHfhy9blV3F7n5BAsKblEL-i6HznOpko3g/exec";
-// ── Persistence ──────────────────────────────────────────────────────────────
+
+// ── Picker Wheel Toggle ───────────────────────────────────────────────────────
+
+function toggleWheel() {
+  const overlay  = document.getElementById('wheelOverlay');
+  const pageWrap = document.getElementById('pageWrap');
+  const btn      = document.getElementById('wheelBtn');
+  const isOpen   = overlay.classList.contains('visible');
+
+  if (isOpen) {
+    overlay.classList.remove('visible');
+    pageWrap.classList.remove('blurred');
+    btn.classList.remove('active');
+    btn.querySelector('.wheel-fab-label').textContent = 'SPIN';
+  } else {
+    overlay.classList.add('visible');
+    pageWrap.classList.add('blurred');
+    btn.classList.add('active');
+    btn.querySelector('.wheel-fab-label').textContent = 'CLOSE';
+  }
+}
+
+function handleOverlayClick(event) {
+  // Close only if clicking the backdrop, not the modal itself
+  if (event.target === document.getElementById('wheelOverlay')) {
+    toggleWheel();
+  }
+}
+
+// ── Persistence (Google Sheets) ───────────────────────────────────────────────
 
 async function fetchTeams() {
   try {
-    const res = await fetch(API_URL);
+    const res  = await fetch(API_URL);
     const data = await res.json();
 
     teams = data.map((t, index) => ({
-      id: index + 1,
+      id:     index + 1,
       teamId: String(t["Team ID"]),
-      name: t["Team Name"],
+      name:   t["Team Name"],
       points: Number(t["Total Points"]) || 0,
-      added: index
+      added:  index
     }));
 
     render(true);
-
   } catch (err) {
     console.error("Fetch failed:", err);
   }
 }
 
-// ── Team Management ───────────────────────────────────────────────────────────
-
-// function addTeam() {
-//   const idEl   = document.getElementById('teamId');
-//   const nameEl = document.getElementById('teamName');
-//   const ptsEl  = document.getElementById('teamPoints');
-//   const teamId = idEl.value.trim();
-//   const name   = nameEl.value.trim();
-//   const pts    = Math.max(0, parseInt(ptsEl.value) || 0);
-
-//   if (!teamId) { idEl.focus(); shake(idEl); return; }
-//   if (!name)   { nameEl.focus(); shake(nameEl); return; }
-
-//   teams.push({ id: ++idCounter, teamId, name, points: pts, added: Date.now() });
-
-//   idEl.value   = '';
-//   nameEl.value = '';
-//   ptsEl.value  = '';
-//   idEl.focus();
-//   save();
-//   render(true);
-// }
-
-// function changePoints(id, delta, event) {
-//   const t = teams.find(t => t.id === id);
-//   if (!t) return;
-//   t.points = Math.max(0, t.points + delta);
-//   save();
-//   spawnDelta(event, delta);
-//   render(false, id);
-// }
-
-function applyPoints(id, event) {
-  const input = document.getElementById(`manual-${id}`);
-  if (!input) return;
-  const val = parseInt(input.value);
-  if (isNaN(val) || val === 0) { input.focus(); return; }
-  changePoints(id, val, event);
-  input.value = '';
-}
-
-// function removeTeam(id) {
-//   teams = teams.filter(t => t.id !== id);
-//   save();
-//   render(true);
-// }
-
 // ── Animations & Effects ──────────────────────────────────────────────────────
 
 function shake(el) {
   el.style.animation = 'none';
-  el.offsetHeight; // force reflow
+  el.offsetHeight;
   el.style.animation = 'shake 0.3s ease';
   el.addEventListener('animationend', () => el.style.animation = '', { once: true });
 }
@@ -115,7 +96,6 @@ function render(isStructural = false, changedId = null) {
   const lb     = document.getElementById('leaderboard');
   const maxPts = sorted[0]?.points || 1;
 
-  // Update stats
   document.getElementById('statTeams').textContent = teams.length;
 
   if (teams.length === 0) {
@@ -124,24 +104,21 @@ function render(isStructural = false, changedId = null) {
     return;
   }
 
-  // Check if rank 1 changed (for confetti)
-  const newFirstId    = sorted[0]?.id;
-  const oldFirstId    = prevOrder[0];
+  const newFirstId     = sorted[0]?.id;
+  const oldFirstId     = prevOrder[0];
   const rankOneChanged = newFirstId !== oldFirstId && oldFirstId !== undefined;
 
-  // Snapshot old positions for FLIP animation
   const existingCards = {};
   lb.querySelectorAll('.team-card').forEach(el => {
     existingCards[parseInt(el.dataset.id)] = el.getBoundingClientRect();
   });
 
-  // Build HTML
   lb.innerHTML = sorted.map((team, i) => {
-    const rank      = i + 1;
-    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+    const rank       = i + 1;
+    const rankClass  = rank <= 3 ? `rank-${rank}` : '';
     const badgeClass = rank <= 3 ? `r${rank}` : 'rn';
-    const pct       = maxPts > 0 ? (team.points / maxPts * 100) : 0;
-    const crown     = rank === 1 ? '<span class="crown">👑</span>' : '';
+    const pct        = maxPts > 0 ? (team.points / maxPts * 100) : 0;
+    const crown      = rank === 1 ? '<span class="crown">👑</span>' : '';
 
     return `
       <div class="team-card ${rankClass}" data-id="${team.id}" data-rank="${rank}">
@@ -149,7 +126,7 @@ function render(isStructural = false, changedId = null) {
         <div class="rank-badge ${badgeClass}">${rank}</div>
         <div class="team-info">
           <div class="team-name">${escHtml(team.name)}</div>
-          <div class="team-id-badge">${escHtml(team.teamId)}</div>
+          ${team.teamId ? `<div class="team-id-badge">${escHtml(team.teamId)}</div>` : ''}
           <div class="team-meta">#${rank} · ${team.points === 1 ? '1 pt' : team.points + ' pts'}</div>
           <div class="progress-wrap">
             <div class="progress-bar" style="width:${pct}%"></div>
@@ -162,21 +139,18 @@ function render(isStructural = false, changedId = null) {
       </div>`;
   }).join('');
 
-  // Apply FLIP animations
   lb.querySelectorAll('.team-card').forEach((card, i) => {
     const id = parseInt(card.dataset.id);
 
     if (!existingCards[id]) {
-      // New card — slide in
       card.style.animation = `cardEnter 0.4s ${i * 0.04}s cubic-bezier(0.16,1,0.3,1) both`;
     } else {
-      // Existing card — FLIP to new position
       const dy = existingCards[id].top - card.getBoundingClientRect().top;
       if (Math.abs(dy) > 2) {
         const moved = dy < 0 ? 'moving-down' : 'moving-up';
         card.style.transform  = `translateY(${dy}px)`;
         card.style.transition = 'none';
-        card.offsetHeight; // force reflow
+        card.offsetHeight;
         card.style.transform  = '';
         card.style.transition = 'transform 0.5s cubic-bezier(0.16,1,0.3,1)';
         card.classList.add(moved);
@@ -184,18 +158,16 @@ function render(isStructural = false, changedId = null) {
       }
     }
 
-    // Pop the points number that just changed
     if (changedId === id) {
       const pEl = document.getElementById(`pts-${id}`);
       if (pEl) {
         pEl.classList.remove('points-pop');
-        pEl.offsetHeight; // force reflow
+        pEl.offsetHeight;
         pEl.classList.add('points-pop');
       }
     }
   });
 
-  // Confetti on new rank 1
   if (rankOneChanged) {
     const firstCard = lb.querySelector('.rank-1');
     if (firstCard) {
@@ -210,36 +182,23 @@ function render(isStructural = false, changedId = null) {
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
 function escHtml(str) {
-  return str
+  return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
 
+// ── Keyboard: close modal on Escape ──────────────────────────────────────────
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const overlay = document.getElementById('wheelOverlay');
+    if (overlay.classList.contains('visible')) toggleWheel();
+  }
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-const idInput = document.getElementById('teamId');
-const nameInput = document.getElementById('teamName');
-const ptsInput = document.getElementById('teamPoints');
-
-if (idInput) {
-  idInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') addTeam();
-  });
-}
-
-if (nameInput) {
-  nameInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') addTeam();
-  });
-}
-
-if (ptsInput) {
-  ptsInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') addTeam();
-  });
-}
-
 fetchTeams();
-setInterval(fetchTeams, 10000); // refresh every 10 sec
+setInterval(fetchTeams, 10000); // refresh every 10 seconds

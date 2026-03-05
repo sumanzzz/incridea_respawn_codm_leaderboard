@@ -564,3 +564,155 @@ input::placeholder { color: var(--muted); }
   .points-display { font-size: 24px; }
   .rank-badge { width: 36px; height: 36px; font-size: 17px; }
 }
+
+/* ── Page wrap (blurs when wheel is open) ── */
+.page-wrap {
+  transition: filter 0.4s ease;
+}
+
+.page-wrap.blurred {
+  filter: blur(6px) brightness(0.5);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Floating Wheel Button ── */
+.wheel-fab {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: none;
+  border-radius: 50px;
+  color: #fff;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(124,58,237,0.5);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wheel-fab:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 8px 32px rgba(124,58,237,0.65);
+}
+
+.wheel-fab:active {
+  transform: scale(0.97);
+}
+
+.wheel-fab-icon {
+  font-size: 20px;
+  animation: fabSpin 6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes fabSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.wheel-fab.active {
+  background: linear-gradient(135deg, #ff3c5f, #c4002f);
+  box-shadow: 0 4px 24px rgba(255,60,95,0.5);
+}
+
+/* ── Overlay ── */
+.wheel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.wheel-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Modal ── */
+.wheel-modal {
+  position: relative;
+  background: #0d0d12;
+  border: 1px solid rgba(124,58,237,0.4);
+  border-radius: 20px;
+  padding: 24px 24px 20px;
+  width: min(900px, 95vw);
+  box-shadow: 0 0 80px rgba(124,58,237,0.25), 0 24px 60px rgba(0,0,0,0.6);
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  overflow: hidden;
+}
+
+.wheel-modal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #7c3aed, #00e5ff, transparent);
+}
+
+.wheel-overlay.visible .wheel-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* ── Modal header ── */
+.wheel-title {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.wheel-title-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: #7c3aed;
+  text-transform: uppercase;
+}
+
+.wheel-title-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, #fff 30%, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Close button ── */
+.wheel-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #e8eaf0;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  z-index: 10;
+}
+
+.wheel-close:hover {
+  background: rgba(255,60,95,0.15);
+  border-color: rgba(255,60,95,0.4);
+  color: #ff3c5f;
+}
