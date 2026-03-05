@@ -1,25 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Respawn</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Respawn</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
 
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
+    <div class="container">
+      <header class="header">
+        <div class="header-label">Incridea</div>
+        <h1>Respawn - CODM</h1>
+        <div class="header-line"></div>
+      </header>
 
-  <div class="container">
-    <header class="header">
-      <div class="header-label">Incridea</div>
-      <h1>Respawn - CODM</h1>
-      <div class="header-line"></div>
-    </header>
-
-    <!-- <div class="add-panel">
+      <!-- <div class="add-panel">
       <div class="input-wrap" style="max-width:120px">
         <label>Team ID</label>
         <input type="text" id="teamId" placeholder="e.g. 101" maxlength="12" />
@@ -35,21 +37,28 @@
       <button class="add-btn" onclick="addTeam()">+ ADD</button>
     </div> -->
 
-    <div class="stats-bar">
-      <div class="stat">
-        <span class="stat-num" id="statTeams">0</span>
-        <span class="stat-label">Teams</span>
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-num" id="statTeams">0</span>
+          <span class="stat-label">Teams</span>
+        </div>
+      </div>
+
+      <div class="leaderboard" id="leaderboard">
+        <div class="empty-state">
+          <span class="empty-icon">🏆</span>
+          <p>Add teams to begin the competition</p>
+        </div>
       </div>
     </div>
+    <iframe
+      src="https://pickerwheel.com/emb/?choices=Hardpoint%20-%20Raid,Hardpoint%20-%20Nuketown,Hardpoint%20-%20Summit,Hardpoint%20-%20Firing%20range,Hardpoint%20-%20Crash,Hardpoint%20-%20Shoot%20House,Domination%20-%20Nuketown,Domination%20-%20Firing%20range,Domination%20-%20Cross%20fire,Domination%20-%20Raid,Domination%20-%20Apocalypse,Domination%20-%20Standoff,Search%20and%20Destroy%20-%20Standoff,Search%20and%20Destroy%20-%20Crash,Search%20and%20Destroy%20-%20Summit,Search%20and%20Destroy%20-%20Firing%20range,Search%20and%20Destroy%20-%20Raid,Search%20and%20destroy%20-%20Hackney%20Yard,Search%20and%20destroy%20-%20Tunsia&confetti=true"
+      width="100%"
+      height="550px"
+      scrolling="no"
+      frameborder="0"
+    ></iframe>
 
-    <div class="leaderboard" id="leaderboard">
-      <div class="empty-state">
-        <span class="empty-icon">🏆</span>
-        <p>Add teams to begin the competition</p>
-      </div>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
