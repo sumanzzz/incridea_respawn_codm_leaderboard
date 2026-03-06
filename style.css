@@ -20,7 +20,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Rajdhani', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -75,9 +75,8 @@ body::before {
 
 .header-label {
   font-size: 11px;
-  letter-spacing: 0.4em;
+  letter-spacing: 0.15em;
   color: var(--accent);
-  text-transform: uppercase;
   margin-bottom: 8px;
 }
 
@@ -182,8 +181,7 @@ body::before {
 .stat-label {
   font-size: 10px;
   color: var(--muted);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* ── Leaderboard ── */
@@ -208,8 +206,7 @@ body::before {
 
 .empty-state p {
   font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* ── Team card ── */
@@ -267,7 +264,7 @@ body::before {
 .team-info { flex: 1; min-width: 0; }
 
 .team-name {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Barlow', sans-serif;
   font-size: 20px;
   letter-spacing: 0.05em;
   white-space: nowrap;
@@ -287,7 +284,7 @@ body::before {
   border-radius: 4px;
   padding: 2px 7px;
   margin-top: 3px;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .team-meta {
@@ -339,8 +336,8 @@ body::before {
 .points-label {
   font-size: 10px;
   color: var(--muted);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-transform: none;
 }
 
 .crown {
@@ -422,10 +419,9 @@ body::before {
 
 .mm-config-title { margin-bottom: 24px; }
 .mm-config-label {
-  font-size: 10px;
-  letter-spacing: 0.3em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   color: var(--purple);
-  text-transform: uppercase;
 }
 .mm-config-heading {
   font-family: 'Bebas Neue', sans-serif;
@@ -450,9 +446,9 @@ body::before {
 }
 .mm-field label {
   font-size: 10px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.08em;
   color: var(--muted);
-  text-transform: uppercase;
+  text-transform: none;
   display: block;
   margin-bottom: 8px;
 }
@@ -462,7 +458,7 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-size: 14px;
   padding: 12px 16px;
   outline: none;
@@ -485,7 +481,7 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--muted);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;
@@ -540,7 +536,7 @@ body::before {
 .mm-results-sub {
   font-size: 11px;
   color: var(--muted);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.03em;
   margin-top: 2px;
 }
 .mm-reset-btn {
@@ -549,7 +545,7 @@ body::before {
   border: 1px solid rgba(255,60,95,0.25);
   border-radius: 8px;
   color: var(--accent);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 12px;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -570,9 +566,10 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--muted);
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 17px;
-  letter-spacing: 0.1em;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -613,9 +610,9 @@ body::before {
 
 .match-num {
   font-size: 10px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.06em;
   color: var(--muted);
-  text-transform: uppercase;
+  text-transform: none;
   margin-bottom: 10px;
 }
 
@@ -633,14 +630,15 @@ body::before {
 .match-team-id {
   font-size: 10px;
   color: var(--accent2);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-transform: none;
   margin-bottom: 2px;
 }
 .match-team-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px;
-  letter-spacing: 0.05em;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -678,7 +676,7 @@ body::before {
 .match-map-text {
   font-size: 11px;
   color: var(--muted);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.03em;
 }
 .match-map-display.has-result .match-map-text {
   color: var(--text);
@@ -717,7 +715,7 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   padding: 10px 14px;
   outline: none;
@@ -731,9 +729,10 @@ body::before {
   border: none;
   border-radius: 8px;
   color: #fff;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 17px;
-  letter-spacing: 0.08em;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
   white-space: nowrap;
@@ -823,10 +822,9 @@ body::before {
 
 .wheel-title { text-align: center; margin-bottom: 16px; }
 .wheel-title-label {
-  font-size: 10px;
-  letter-spacing: 0.3em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   color: var(--purple);
-  text-transform: uppercase;
 }
 .wheel-title-text {
   font-family: 'Bebas Neue', sans-serif;
@@ -900,9 +898,10 @@ body::before {
 }
 
 .robin-col-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
-  letter-spacing: 0.12em;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.06em;
   background: linear-gradient(135deg, #fff 30%, var(--purple));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -917,9 +916,9 @@ body::before {
 
 .robin-row-label {
   font-size: 10px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.08em;
   color: var(--purple);
-  text-transform: uppercase;
+  text-transform: none;
   margin-bottom: 6px;
   margin-top: 4px;
   padding-left: 2px;
@@ -947,9 +946,9 @@ body::before {
 
 .match-winner-label {
   font-size: 10px;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.05em;
   color: var(--muted);
-  text-transform: uppercase;
+  text-transform: none;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -960,7 +959,7 @@ body::before {
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--muted);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-size: 12px;
   padding: 6px 10px;
   outline: none;
@@ -1001,4 +1000,49 @@ body::before {
 
 .match-card.match-decided {
   border-color: rgba(245,200,66,0.2);
+}
+
+/* ── Rajdhani / Barlow weight tuning ── */
+.seg-btn,
+.mm-type-btn,
+.mm-reset-btn,
+.apply-btn,
+.match-winner-label,
+.match-num,
+.match-map-text,
+.team-meta,
+.stat-label,
+.points-label,
+.mm-config-label,
+.wheel-title-label,
+.robin-col-label,
+.robin-row-label,
+.mm-field label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+}
+
+.team-name,
+.match-team-name {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.mm-config-heading,
+.mm-results-label {
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+.mm-results-sub,
+.empty-state p {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+}
+
+/* Input placeholder styling */
+input::placeholder,
+.mini-wheel-input::placeholder {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 300;
 }
