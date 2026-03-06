@@ -181,7 +181,7 @@ function buildMatchCard(m, idx) {
          <div class="match-team-name">BYE</div>
        </div>`;
   const mapHtml = m.map
-    ? `<div class="match-map-display has-result"><span class="match-map-text">🗺 ${escHtml(m.map)}</span></div>`
+    ? `<div class="match-map-display has-result"><span class="match-map-text">${escHtml(m.map)}</span></div>`
     : `<div class="match-map-display"><span class="match-map-text">No map selected</span></div>`;
 
   // Winner dropdown options
@@ -273,7 +273,8 @@ function resetMatchmaker() {
 function openMiniWheel(matchId) {
   activeMiniMatchId = matchId;
   document.getElementById('miniWheelMatchLabel').textContent = `// Match ${matchId}`;
-  document.getElementById('miniWheelResult').value = '';
+  // Clear any previously selected chip
+  document.querySelectorAll('.map-chip').forEach(c => c.classList.remove('selected'));
   const overlay = document.getElementById('miniWheelOverlay');
   const pageWrap = document.getElementById('pageWrap');
   overlay.classList.add('visible');
@@ -290,32 +291,35 @@ function handleMiniOverlayClick(event) {
   if (event.target === document.getElementById('miniWheelOverlay')) closeMiniWheel();
 }
 
-function confirmMiniWheel() {
-  const result = document.getElementById('miniWheelResult').value.trim();
-  if (!result) { shake(document.getElementById('miniWheelResult')); return; }
+function selectMapChip(el, mapResult) {
   if (!activeMiniMatchId) return;
 
-  // Update map in correct matchups array
-  const id = activeMiniMatchId;
-  let updated = false;
+  // Briefly highlight the chip
+  document.querySelectorAll('.map-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
 
-  const updateIn = (arr) => {
-    const m = arr.find(m => String(m.id) === String(id));
-    if (m) { m.map = result; updated = true; }
-  };
+  // Short delay so user sees the selection before modal closes
+  setTimeout(() => {
+    const id = activeMiniMatchId;
+    const updateIn = (arr) => {
+      const m = arr.find(m => String(m.id) === String(id));
+      if (m) m.map = mapResult;
+    };
+    updateIn(matchups);
+    updateIn(robinGroupA);
+    updateIn(robinGroupB);
 
-  updateIn(matchups);
-  updateIn(robinGroupA);
-  updateIn(robinGroupB);
+    if (currentMMType === 'random') {
+      renderMatchGrid(matchups, 'matchGrid');
+    } else {
+      renderRobinSideBySide();
+    }
+    closeMiniWheel();
+  }, 200);
+}
 
-  // Re-render current view
-  if (currentMMType === 'random') {
-    renderMatchGrid(matchups, 'matchGrid');
-  } else {
-    renderRobinSideBySide();
-  }
-
-  closeMiniWheel();
+function confirmMiniWheel() {
+  // kept for keyboard shortcut compatibility but no longer used directly
 }
 
 // ── Global Wheel Toggle ───────────────────────────────────────────────────────
@@ -485,7 +489,7 @@ document.addEventListener('keydown', e => {
     if (document.getElementById('miniWheelOverlay').classList.contains('visible')) { closeMiniWheel(); return; }
     if (document.getElementById('wheelOverlay').classList.contains('visible')) { toggleWheel(); return; }
   }
-  if (e.key === 'Enter' && activeMiniMatchId) confirmMiniWheel();
+  // Enter key no longer used for mini wheel (chip selection auto-confirms)
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────

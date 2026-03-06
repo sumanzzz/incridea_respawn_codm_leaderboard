@@ -155,8 +155,34 @@
         id="miniWheelFrame"
       ></iframe>
       <div class="mini-wheel-footer">
-        <input class="mini-wheel-input" type="text" id="miniWheelResult" placeholder="Type result from wheel..." />
-        <button class="mini-wheel-confirm" onclick="confirmMiniWheel()">✓ CONFIRM</button>
+        <div class="chip-section-label">Hardpoint</div>
+        <div class="chip-group">
+          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Raid')">Raid</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Nuketown')">Nuketown</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Summit')">Summit</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Firing Range')">Firing Range</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Crash')">Crash</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Shoot House')">Shoot House</button>
+        </div>
+        <div class="chip-section-label">Domination</div>
+        <div class="chip-group">
+          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Nuketown')">Nuketown</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Firing Range')">Firing Range</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Cross Fire')">Cross Fire</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Raid')">Raid</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Apocalypse')">Apocalypse</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Standoff')">Standoff</button>
+        </div>
+        <div class="chip-section-label">Search & Destroy</div>
+        <div class="chip-group">
+          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Standoff')">Standoff</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Crash')">Crash</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Summit')">Summit</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Firing Range')">Firing Range</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Raid')">Raid</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Hackney Yard')">Hackney Yard</button>
+          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Tunisia')">Tunisia</button>
+        </div>
       </div>
     </div>
   </div>
