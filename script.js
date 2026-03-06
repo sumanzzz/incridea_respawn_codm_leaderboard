@@ -142,18 +142,21 @@ function updateRandomHeader() {
     `${matchups.length} matchup${matchups.length !== 1 ? 's' : ''} · ${randomPool.length} teams · ${playedPairs.size} pairs played`;
 }
 
+let robinTeamsA = [];
+let robinTeamsB = [];
+
 function generateRobin(pool) {
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   const half = Math.ceil(shuffled.length / 2);
-  const groupA = shuffled.slice(0, half);
-  const groupB = shuffled.slice(half);
+  robinTeamsA = shuffled.slice(0, half);
+  robinTeamsB = shuffled.slice(half);
 
-  robinGroupA = buildRoundRobin(groupA, 'A');
-  robinGroupB = buildRoundRobin(groupB, 'B');
+  robinGroupA = buildRoundRobin(robinTeamsA, 'A');
+  robinGroupB = buildRoundRobin(robinTeamsB, 'B');
 
   document.getElementById('mmResultsLabel').textContent = 'ROUND ROBIN';
   document.getElementById('mmResultsSub').textContent =
-    `Group A: ${groupA.length} teams (${robinGroupA.length} matches) · Group B: ${groupB.length} teams (${robinGroupB.length} matches)`;
+    `Group A: ${robinTeamsA.length} teams (${robinGroupA.length} matches) · Group B: ${robinTeamsB.length} teams (${robinGroupB.length} matches)`;
   document.getElementById('matchGrid').style.display = 'none';
   document.getElementById('robinLayout').style.display = 'block';
   document.getElementById('generateAgainWrap').style.display = 'none';
@@ -240,25 +243,46 @@ function renderMatchGrid(matches, containerId) {
 }
 
 function renderRobinSideBySide() {
+  // ── Team list header ──
+  const teamListA = robinTeamsA.map(t => `
+    <div class="robin-team-row">
+      <span class="robin-team-id">${escHtml(t.teamId || '')}</span>
+      <span class="robin-team-name">${escHtml(t.name)}</span>
+    </div>`).join('');
+
+  const teamListB = robinTeamsB.map(t => `
+    <div class="robin-team-row">
+      <span class="robin-team-id">${escHtml(t.teamId || '')}</span>
+      <span class="robin-team-name">${escHtml(t.name)}</span>
+    </div>`).join('');
+
+  document.getElementById('robinTeamListA').innerHTML = teamListA;
+  document.getElementById('robinTeamListB').innerHTML = teamListB;
+
+  // ── Match rows with single centered match number ──
   const maxRows = Math.max(robinGroupA.length, robinGroupB.length);
-  let colAHtml = '';
-  let colBHtml = '';
+  let rowsHtml = '';
 
   for (let i = 0; i < maxRows; i++) {
-    if (robinGroupA[i]) {
-      colAHtml += `<div class="robin-row-label">Match - ${i + 1}</div>` + buildMatchCard(robinGroupA[i], i);
-    }
-    if (robinGroupB[i]) {
-      colBHtml += `<div class="robin-row-label">Match - ${i + 1}</div>` + buildMatchCard(robinGroupB[i], i);
-    }
+    const cardA = robinGroupA[i] ? buildMatchCard(robinGroupA[i], i) : '<div class="robin-empty-slot"></div>';
+    const cardB = robinGroupB[i] ? buildMatchCard(robinGroupB[i], i) : '<div class="robin-empty-slot"></div>';
+    rowsHtml += `
+      <div class="robin-match-row">
+        <div class="robin-match-row-header">
+          <div class="robin-match-num-center">Match ${i + 1}</div>
+        </div>
+        <div class="robin-match-cols">
+          <div class="robin-match-col">${cardA}</div>
+          <div class="robin-match-col">${cardB}</div>
+        </div>
+      </div>`;
   }
 
-  document.getElementById('robinColA').innerHTML = colAHtml;
-  document.getElementById('robinColB').innerHTML = colBHtml;
+  document.getElementById('robinMatchRows').innerHTML = rowsHtml;
 }
 
 function resetMatchmaker() {
-  matchups = []; robinGroupA = []; robinGroupB = [];
+  matchups = []; robinGroupA = []; robinGroupB = []; robinTeamsA = []; robinTeamsB = [];
   playedPairs = new Set(); randomPool = []; randomRound = 1;
   document.getElementById('mmConfig').style.display = 'block';
   document.getElementById('mmResults').style.display = 'none';

@@ -95,16 +95,29 @@
 
           <!-- Round Robin side-by-side layout -->
           <div id="robinLayout" style="display:none">
-            <div class="robin-columns">
-              <div class="robin-col">
+
+            <!-- Team lists -->
+            <div class="robin-team-lists">
+              <div class="robin-team-list-col">
                 <div class="robin-col-header"><span class="robin-col-label">Group A</span></div>
-                <div class="robin-col-matches" id="robinColA"></div>
+                <div class="robin-team-list" id="robinTeamListA"></div>
               </div>
-              <div class="robin-col">
+              <div class="robin-team-list-col">
                 <div class="robin-col-header"><span class="robin-col-label">Group B</span></div>
-                <div class="robin-col-matches" id="robinColB"></div>
+                <div class="robin-team-list" id="robinTeamListB"></div>
               </div>
             </div>
+
+            <!-- Matches divider -->
+            <div class="robin-matches-divider">
+              <div class="robin-matches-divider-line"></div>
+              <span class="robin-matches-divider-label">Matches</span>
+              <div class="robin-matches-divider-line"></div>
+            </div>
+
+            <!-- Match rows: Card A | Match N | Card B -->
+            <div id="robinMatchRows"></div>
+
           </div>
         </div>
 
