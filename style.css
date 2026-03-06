@@ -1046,3 +1046,52 @@ input::placeholder,
   font-family: 'Barlow', sans-serif;
   font-weight: 300;
 }
+
+/* ── Generate Again Button ── */
+.generate-again-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--surface);
+  border: 1px dashed rgba(124,58,237,0.4);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.generate-again-btn:hover {
+  border-color: var(--purple);
+  background: rgba(124,58,237,0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(124,58,237,0.2);
+}
+
+.generate-again-btn:active {
+  transform: translateY(0);
+}
+
+.generate-again-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(124,58,237,0.05), transparent);
+  pointer-events: none;
+}
+
+.generate-again-sub {
+  font-family: 'Barlow', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}

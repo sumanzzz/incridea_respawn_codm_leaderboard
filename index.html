@@ -85,6 +85,14 @@
           <!-- Random matchups (single grid) -->
           <div class="match-grid" id="matchGrid"></div>
 
+          <!-- Generate Again button (random only) -->
+          <div id="generateAgainWrap" style="display:none; margin-top:20px;">
+            <button class="generate-again-btn" onclick="regenerateRandom()">
+              🔀 Generate Again
+              <span class="generate-again-sub">Previous matchups won't repeat</span>
+            </button>
+          </div>
+
           <!-- Round Robin side-by-side layout -->
           <div id="robinLayout" style="display:none">
             <div class="robin-columns">

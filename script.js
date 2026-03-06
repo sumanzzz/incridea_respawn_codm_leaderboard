@@ -7,6 +7,9 @@ let robinGroupA = [];      // matchups for group A
 let robinGroupB = [];      // matchups for group B
 let currentGroup = 'A';
 let activeMiniMatchId = null;
+let playedPairs = new Set();  // tracks "teamA.id|teamB.id" pairs across rounds
+let randomPool = [];          // the pool used for random matchmaking (persists across rounds)
+let randomRound = 1;          // current round number
 
 const API_URL = "https://script.google.com/macros/s/AKfycbwatUeWFm1RvsuB4iESaiikDJuZH-HBoiCViHfhy9blV3F7n5BAsKblEL-i6HznOpko3g/exec";
 
@@ -55,23 +58,88 @@ function generateMatchups() {
 }
 
 function generateRandom(pool) {
-  // Shuffle pool
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  matchups = [];
-  let mid = Math.floor(shuffled.length / 2);
-  for (let i = 0; i < mid; i++) {
-    matchups.push({ id: i + 1, teamA: shuffled[i], teamB: shuffled[mid + i], map: null });
-  }
-  // If odd team out, add a BYE
-  if (shuffled.length % 2 !== 0) {
-    matchups.push({ id: mid + 1, teamA: shuffled[shuffled.length - 1], teamB: null, map: null });
-  }
+  // Fresh start — reset history
+  playedPairs = new Set();
+  randomPool = pool;
+  randomRound = 1;
+  buildRandomRound();
 
-  document.getElementById('mmResultsLabel').textContent = 'RANDOM MATCHUPS';
-  document.getElementById('mmResultsSub').textContent = `${matchups.length} matchup${matchups.length !== 1 ? 's' : ''} · ${pool.length} teams`;
   document.getElementById('matchGrid').style.display = 'grid';
   document.getElementById('robinLayout').style.display = 'none';
+  document.getElementById('generateAgainWrap').style.display = 'block';
+  updateRandomHeader();
   renderMatchGrid(matchups, 'matchGrid');
+}
+
+function buildRandomRound() {
+  // Try to pair everyone without repeating a matchup
+  // Uses backtracking shuffle — tries up to 50 times then falls back gracefully
+  const pool = randomPool;
+  let attempts = 0;
+  let best = null;
+
+  while (attempts < 50) {
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const mid = Math.floor(shuffled.length / 2);
+    const pairs = [];
+    let valid = true;
+
+    for (let i = 0; i < mid; i++) {
+      const a = shuffled[i];
+      const b = shuffled[mid + i];
+      const key1 = `${Math.min(a.id, b.id)}|${Math.max(a.id, b.id)}`;
+      if (playedPairs.has(key1)) { valid = false; break; }
+      pairs.push({ a, b, key: key1 });
+    }
+
+    if (valid) { best = { pairs, shuffled, mid }; break; }
+    attempts++;
+  }
+
+  // Use best found (or last attempt if all pairs exhausted)
+  if (!best) {
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const mid = Math.floor(shuffled.length / 2);
+    const pairs = [];
+    for (let i = 0; i < mid; i++) {
+      const a = shuffled[i];
+      const b = shuffled[mid + i];
+      const key = `${Math.min(a.id, b.id)}|${Math.max(a.id, b.id)}`;
+      pairs.push({ a, b, key });
+    }
+    best = { pairs, shuffled, mid };
+  }
+
+  // Commit pairs to history and build matchups
+  matchups = [];
+  best.pairs.forEach(({ a, b, key }, i) => {
+    playedPairs.add(key);
+    matchups.push({ id: i + 1, teamA: a, teamB: b, map: null, winner: null });
+  });
+
+  // Handle odd team out
+  if (best.shuffled.length % 2 !== 0) {
+    matchups.push({
+      id: best.mid + 1,
+      teamA: best.shuffled[best.shuffled.length - 1],
+      teamB: null, map: null, winner: null
+    });
+  }
+}
+
+function regenerateRandom() {
+  randomRound++;
+  buildRandomRound();
+  updateRandomHeader();
+  renderMatchGrid(matchups, 'matchGrid');
+  // Scroll to top of results
+  document.getElementById('mmResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateRandomHeader() {
+  document.getElementById('mmResultsLabel').textContent = `ROUND ${randomRound} MATCHUPS`;
+  document.getElementById('mmResultsSub').textContent =
+    `${matchups.length} matchup${matchups.length !== 1 ? 's' : ''} · ${randomPool.length} teams · ${playedPairs.size} pairs played`;
 }
 
 function generateRobin(pool) {
@@ -88,6 +156,7 @@ function generateRobin(pool) {
     `Group A: ${groupA.length} teams (${robinGroupA.length} matches) · Group B: ${groupB.length} teams (${robinGroupB.length} matches)`;
   document.getElementById('matchGrid').style.display = 'none';
   document.getElementById('robinLayout').style.display = 'block';
+  document.getElementById('generateAgainWrap').style.display = 'none';
   renderRobinSideBySide();
 }
 
@@ -190,10 +259,12 @@ function renderRobinSideBySide() {
 
 function resetMatchmaker() {
   matchups = []; robinGroupA = []; robinGroupB = [];
+  playedPairs = new Set(); randomPool = []; randomRound = 1;
   document.getElementById('mmConfig').style.display = 'block';
   document.getElementById('mmResults').style.display = 'none';
   document.getElementById('matchGrid').style.display = 'grid';
   document.getElementById('robinLayout').style.display = 'none';
+  document.getElementById('generateAgainWrap').style.display = 'none';
   document.getElementById('mmTeamCount').value = '';
 }
 
