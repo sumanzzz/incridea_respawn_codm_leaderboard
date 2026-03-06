@@ -1,9 +1,253 @@
 let teams = [];
 let idCounter = 0;
 let prevOrder = [];
+let currentMMType = 'random';
+let matchups = [];         // { id, teamA, teamB, map }
+let robinGroupA = [];      // matchups for group A
+let robinGroupB = [];      // matchups for group B
+let currentGroup = 'A';
+let activeMiniMatchId = null;
+
 const API_URL = "https://script.google.com/macros/s/AKfycbwatUeWFm1RvsuB4iESaiikDJuZH-HBoiCViHfhy9blV3F7n5BAsKblEL-i6HznOpko3g/exec";
 
-// ── Picker Wheel Toggle ───────────────────────────────────────────────────────
+// ── Tab / Segmented Control ───────────────────────────────────────────────────
+
+function switchTab(tab) {
+  document.getElementById('tabLeaderboard').classList.toggle('active', tab === 'leaderboard');
+  document.getElementById('tabMatchmaker').classList.toggle('active', tab === 'matchmaker');
+  document.getElementById('segLeaderboard').classList.toggle('active', tab === 'leaderboard');
+  document.getElementById('segMatchmaker').classList.toggle('active', tab === 'matchmaker');
+  const slider = document.getElementById('segSlider');
+  slider.classList.toggle('right', tab === 'matchmaker');
+}
+
+// ── Matchmaker Type Selection ─────────────────────────────────────────────────
+
+function selectMMType(type) {
+  currentMMType = type;
+  document.getElementById('mmTypeRandom').classList.toggle('active', type === 'random');
+  document.getElementById('mmTypeRobin').classList.toggle('active', type === 'robin');
+}
+
+// ── Generate Matchups ─────────────────────────────────────────────────────────
+
+function generateMatchups() {
+  const countInput = document.getElementById('mmTeamCount');
+  const count = parseInt(countInput.value);
+
+  if (!count || count < 2) { shake(countInput); return; }
+  if (teams.length === 0) { alert('No teams loaded yet!'); return; }
+
+  // Take top N teams sorted by points
+  const sorted = [...teams].sort((a, b) => b.points - a.points || a.added - b.added);
+  const pool = sorted.slice(0, Math.min(count, sorted.length));
+
+  if (pool.length < 2) { alert('Need at least 2 teams!'); return; }
+
+  if (currentMMType === 'random') {
+    generateRandom(pool);
+  } else {
+    generateRobin(pool);
+  }
+
+  document.getElementById('mmConfig').style.display = 'none';
+  document.getElementById('mmResults').style.display = 'block';
+}
+
+function generateRandom(pool) {
+  // Shuffle pool
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  matchups = [];
+  let mid = Math.floor(shuffled.length / 2);
+  for (let i = 0; i < mid; i++) {
+    matchups.push({ id: i + 1, teamA: shuffled[i], teamB: shuffled[mid + i], map: null });
+  }
+  // If odd team out, add a BYE
+  if (shuffled.length % 2 !== 0) {
+    matchups.push({ id: mid + 1, teamA: shuffled[shuffled.length - 1], teamB: null, map: null });
+  }
+
+  document.getElementById('mmResultsLabel').textContent = 'RANDOM MATCHUPS';
+  document.getElementById('mmResultsSub').textContent = `${matchups.length} matchup${matchups.length !== 1 ? 's' : ''} · ${pool.length} teams`;
+  document.getElementById('matchGrid').style.display = 'grid';
+  document.getElementById('robinLayout').style.display = 'none';
+  renderMatchGrid(matchups, 'matchGrid');
+}
+
+function generateRobin(pool) {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  const half = Math.ceil(shuffled.length / 2);
+  const groupA = shuffled.slice(0, half);
+  const groupB = shuffled.slice(half);
+
+  robinGroupA = buildRoundRobin(groupA, 'A');
+  robinGroupB = buildRoundRobin(groupB, 'B');
+
+  document.getElementById('mmResultsLabel').textContent = 'ROUND ROBIN';
+  document.getElementById('mmResultsSub').textContent =
+    `Group A: ${groupA.length} teams (${robinGroupA.length} matches) · Group B: ${groupB.length} teams (${robinGroupB.length} matches)`;
+  document.getElementById('matchGrid').style.display = 'none';
+  document.getElementById('robinLayout').style.display = 'block';
+  renderRobinSideBySide();
+}
+
+function buildRoundRobin(pool, prefix) {
+  const result = [];
+  let id = 1;
+  for (let i = 0; i < pool.length; i++) {
+    for (let j = i + 1; j < pool.length; j++) {
+      result.push({ id: `${prefix}${id++}`, teamA: pool[i], teamB: pool[j], map: null });
+    }
+  }
+  return result;
+}
+
+function buildMatchCard(m, idx) {
+  const teamBHtml = m.teamB
+    ? `<div class="match-team" style="text-align:right">
+         <div class="match-team-id">${escHtml(m.teamB.teamId || '')}</div>
+         <div class="match-team-name">${escHtml(m.teamB.name)}</div>
+       </div>`
+    : `<div class="match-team" style="text-align:right;opacity:0.4">
+         <div class="match-team-name">BYE</div>
+       </div>`;
+  const mapHtml = m.map
+    ? `<div class="match-map-display has-result"><span class="match-map-text">🗺 ${escHtml(m.map)}</span></div>`
+    : `<div class="match-map-display"><span class="match-map-text">No map selected</span></div>`;
+
+  // Winner dropdown options
+  const winnerHtml = m.teamB ? `
+    <div class="match-winner-row">
+      <span class="match-winner-label">🏆 Winner</span>
+      <select class="match-winner-select ${m.winner ? 'has-winner' : ''}"
+        onchange="setWinner('${m.id}', this.value)">
+        <option value="">— Select winner —</option>
+        <option value="${escHtml(m.teamA.name)}" ${m.winner === m.teamA.name ? 'selected' : ''}>${escHtml(m.teamA.name)}</option>
+        <option value="${escHtml(m.teamB.name)}" ${m.winner === m.teamB.name ? 'selected' : ''}>${escHtml(m.teamB.name)}</option>
+      </select>
+    </div>` : '';
+
+  return `
+    <div class="match-card ${m.winner ? 'match-decided' : ''}" data-match-id="${m.id}" style="animation-delay:${idx * 0.05}s">
+      <div class="match-num">Match ${m.id}</div>
+      <div class="match-teams">
+        <div class="match-team ${m.winner === m.teamA.name ? 'is-winner' : (m.winner ? 'is-loser' : '')}">
+          <div class="match-team-id">${escHtml(m.teamA.teamId || '')}</div>
+          <div class="match-team-name">${escHtml(m.teamA.name)}</div>
+        </div>
+        <div class="match-vs">VS</div>
+        ${m.teamB ? `<div class="match-team ${m.winner === m.teamB.name ? 'is-winner' : (m.winner ? 'is-loser' : '')}" style="text-align:right">
+          <div class="match-team-id">${escHtml(m.teamB.teamId || '')}</div>
+          <div class="match-team-name">${escHtml(m.teamB.name)}</div>
+        </div>` : `<div class="match-team" style="text-align:right;opacity:0.4"><div class="match-team-name">BYE</div></div>`}
+      </div>
+      <div class="match-footer">
+        ${mapHtml}
+        ${m.teamB ? `<button class="match-spin-btn" onclick="openMiniWheel('${m.id}')" title="Spin for map & mode">🎡</button>` : ''}
+      </div>
+      ${winnerHtml}
+    </div>`;
+}
+
+function setWinner(matchId, winnerName) {
+  const updateIn = (arr) => {
+    const m = arr.find(m => String(m.id) === String(matchId));
+    if (m) m.winner = winnerName || null;
+  };
+  updateIn(matchups);
+  updateIn(robinGroupA);
+  updateIn(robinGroupB);
+
+  if (currentMMType === 'random') {
+    renderMatchGrid(matchups, 'matchGrid');
+  } else {
+    renderRobinSideBySide();
+  }
+}
+
+function renderMatchGrid(matches, containerId) {
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = matches.map((m, i) => buildMatchCard(m, i)).join('');
+}
+
+function renderRobinSideBySide() {
+  const maxRows = Math.max(robinGroupA.length, robinGroupB.length);
+  let colAHtml = '';
+  let colBHtml = '';
+
+  for (let i = 0; i < maxRows; i++) {
+    if (robinGroupA[i]) {
+      colAHtml += `<div class="robin-row-label">Match - ${i + 1}</div>` + buildMatchCard(robinGroupA[i], i);
+    }
+    if (robinGroupB[i]) {
+      colBHtml += `<div class="robin-row-label">Match - ${i + 1}</div>` + buildMatchCard(robinGroupB[i], i);
+    }
+  }
+
+  document.getElementById('robinColA').innerHTML = colAHtml;
+  document.getElementById('robinColB').innerHTML = colBHtml;
+}
+
+function resetMatchmaker() {
+  matchups = []; robinGroupA = []; robinGroupB = [];
+  document.getElementById('mmConfig').style.display = 'block';
+  document.getElementById('mmResults').style.display = 'none';
+  document.getElementById('matchGrid').style.display = 'grid';
+  document.getElementById('robinLayout').style.display = 'none';
+  document.getElementById('mmTeamCount').value = '';
+}
+
+// ── Mini Wheel (per match) ────────────────────────────────────────────────────
+
+function openMiniWheel(matchId) {
+  activeMiniMatchId = matchId;
+  document.getElementById('miniWheelMatchLabel').textContent = `// Match ${matchId}`;
+  document.getElementById('miniWheelResult').value = '';
+  const overlay = document.getElementById('miniWheelOverlay');
+  const pageWrap = document.getElementById('pageWrap');
+  overlay.classList.add('visible');
+  pageWrap.classList.add('blurred');
+}
+
+function closeMiniWheel() {
+  document.getElementById('miniWheelOverlay').classList.remove('visible');
+  document.getElementById('pageWrap').classList.remove('blurred');
+  activeMiniMatchId = null;
+}
+
+function handleMiniOverlayClick(event) {
+  if (event.target === document.getElementById('miniWheelOverlay')) closeMiniWheel();
+}
+
+function confirmMiniWheel() {
+  const result = document.getElementById('miniWheelResult').value.trim();
+  if (!result) { shake(document.getElementById('miniWheelResult')); return; }
+  if (!activeMiniMatchId) return;
+
+  // Update map in correct matchups array
+  const id = activeMiniMatchId;
+  let updated = false;
+
+  const updateIn = (arr) => {
+    const m = arr.find(m => String(m.id) === String(id));
+    if (m) { m.map = result; updated = true; }
+  };
+
+  updateIn(matchups);
+  updateIn(robinGroupA);
+  updateIn(robinGroupB);
+
+  // Re-render current view
+  if (currentMMType === 'random') {
+    renderMatchGrid(matchups, 'matchGrid');
+  } else {
+    renderRobinSideBySide();
+  }
+
+  closeMiniWheel();
+}
+
+// ── Global Wheel Toggle ───────────────────────────────────────────────────────
 
 function toggleWheel() {
   const overlay  = document.getElementById('wheelOverlay');
@@ -25,19 +269,15 @@ function toggleWheel() {
 }
 
 function handleOverlayClick(event) {
-  // Close only if clicking the backdrop, not the modal itself
-  if (event.target === document.getElementById('wheelOverlay')) {
-    toggleWheel();
-  }
+  if (event.target === document.getElementById('wheelOverlay')) toggleWheel();
 }
 
-// ── Persistence (Google Sheets) ───────────────────────────────────────────────
+// ── Google Sheets fetch ───────────────────────────────────────────────────────
 
 async function fetchTeams() {
   try {
     const res  = await fetch(API_URL);
     const data = await res.json();
-
     teams = data.map((t, index) => ({
       id:     index + 1,
       teamId: String(t["Team ID"]),
@@ -45,51 +285,13 @@ async function fetchTeams() {
       points: Number(t["Total Points"]) || 0,
       added:  index
     }));
-
     render(true);
   } catch (err) {
     console.error("Fetch failed:", err);
   }
 }
 
-// ── Animations & Effects ──────────────────────────────────────────────────────
-
-function shake(el) {
-  el.style.animation = 'none';
-  el.offsetHeight;
-  el.style.animation = 'shake 0.3s ease';
-  el.addEventListener('animationend', () => el.style.animation = '', { once: true });
-}
-
-function spawnDelta(event, delta) {
-  if (!event) return;
-  const el = document.createElement('div');
-  el.className   = 'delta-float';
-  el.textContent = delta > 0 ? `+${delta}` : delta;
-  el.style.color = delta > 0 ? '#00e5ff' : '#ff3c5f';
-  el.style.left  = (event.clientX - 20) + 'px';
-  el.style.top   = (event.clientY - 10) + 'px';
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 1000);
-}
-
-function spawnConfetti(x, y) {
-  const colors = ['#f5c842', '#ff3c5f', '#00e5ff', '#fff', '#ff8c00'];
-  for (let i = 0; i < 12; i++) {
-    const el = document.createElement('div');
-    el.className          = 'confetti-piece';
-    el.style.left         = (x + (Math.random() - 0.5) * 60) + 'px';
-    el.style.top          = y + 'px';
-    el.style.background   = colors[Math.floor(Math.random() * colors.length)];
-    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-    el.style.animationDuration = (0.8 + Math.random() * 0.7) + 's';
-    el.style.animationDelay   = (Math.random() * 0.2) + 's';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1500);
-  }
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
+// ── Leaderboard Render ────────────────────────────────────────────────────────
 
 function render(isStructural = false, changedId = null) {
   const sorted = [...teams].sort((a, b) => b.points - a.points || a.added - b.added);
@@ -99,7 +301,7 @@ function render(isStructural = false, changedId = null) {
   document.getElementById('statTeams').textContent = teams.length;
 
   if (teams.length === 0) {
-    lb.innerHTML = `<div class="empty-state"><span class="empty-icon">🏆</span><p>Add teams to begin the competition</p></div>`;
+    lb.innerHTML = `<div class="empty-state"><span class="empty-icon">🏆</span><p>Fetching teams...</p></div>`;
     prevOrder = [];
     return;
   }
@@ -119,7 +321,6 @@ function render(isStructural = false, changedId = null) {
     const badgeClass = rank <= 3 ? `r${rank}` : 'rn';
     const pct        = maxPts > 0 ? (team.points / maxPts * 100) : 0;
     const crown      = rank === 1 ? '<span class="crown">👑</span>' : '';
-
     return `
       <div class="team-card ${rankClass}" data-id="${team.id}" data-rank="${rank}">
         ${crown}
@@ -128,9 +329,7 @@ function render(isStructural = false, changedId = null) {
           <div class="team-name">${escHtml(team.name)}</div>
           ${team.teamId ? `<div class="team-id-badge">${escHtml(team.teamId)}</div>` : ''}
           <div class="team-meta">#${rank} · ${team.points === 1 ? '1 pt' : team.points + ' pts'}</div>
-          <div class="progress-wrap">
-            <div class="progress-bar" style="width:${pct}%"></div>
-          </div>
+          <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
         </div>
         <div class="points-area">
           <div class="points-display" id="pts-${team.id}">${team.points}</div>
@@ -141,7 +340,6 @@ function render(isStructural = false, changedId = null) {
 
   lb.querySelectorAll('.team-card').forEach((card, i) => {
     const id = parseInt(card.dataset.id);
-
     if (!existingCards[id]) {
       card.style.animation = `cardEnter 0.4s ${i * 0.04}s cubic-bezier(0.16,1,0.3,1) both`;
     } else {
@@ -157,14 +355,9 @@ function render(isStructural = false, changedId = null) {
         setTimeout(() => card.classList.remove(moved), 600);
       }
     }
-
     if (changedId === id) {
       const pEl = document.getElementById(`pts-${id}`);
-      if (pEl) {
-        pEl.classList.remove('points-pop');
-        pEl.offsetHeight;
-        pEl.classList.add('points-pop');
-      }
+      if (pEl) { pEl.classList.remove('points-pop'); pEl.offsetHeight; pEl.classList.add('points-pop'); }
     }
   });
 
@@ -179,6 +372,31 @@ function render(isStructural = false, changedId = null) {
   prevOrder = sorted.map(t => t.id);
 }
 
+// ── Effects ───────────────────────────────────────────────────────────────────
+
+function shake(el) {
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'shake 0.3s ease';
+  el.addEventListener('animationend', () => el.style.animation = '', { once: true });
+}
+
+function spawnConfetti(x, y) {
+  const colors = ['#f5c842', '#ff3c5f', '#00e5ff', '#fff', '#ff8c00'];
+  for (let i = 0; i < 12; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = (x + (Math.random() - 0.5) * 60) + 'px';
+    el.style.top  = y + 'px';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.animationDuration = (0.8 + Math.random() * 0.7) + 's';
+    el.style.animationDelay   = (Math.random() * 0.2) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  }
+}
+
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
 function escHtml(str) {
@@ -189,16 +407,17 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-// ── Keyboard: close modal on Escape ──────────────────────────────────────────
+// ── Keyboard ──────────────────────────────────────────────────────────────────
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    const overlay = document.getElementById('wheelOverlay');
-    if (overlay.classList.contains('visible')) toggleWheel();
+    if (document.getElementById('miniWheelOverlay').classList.contains('visible')) { closeMiniWheel(); return; }
+    if (document.getElementById('wheelOverlay').classList.contains('visible')) { toggleWheel(); return; }
   }
+  if (e.key === 'Enter' && activeMiniMatchId) confirmMiniWheel();
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 fetchTeams();
-setInterval(fetchTeams, 10000); // refresh every 10 seconds
+setInterval(fetchTeams, 10000);
