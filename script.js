@@ -1,33 +1,29 @@
-// ── Firebase ─────────────────────────────────────────────────────────────────
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const firebaseConfig = {
+// ── Firebase (compat SDK loaded via CDN in HTML) ─────────────────────────────
+firebase.initializeApp({
   databaseURL: "https://respawn-codm-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
-const fbApp = initializeApp(firebaseConfig);
-const db    = getDatabase(fbApp);
-const MM_REF = ref(db, 'matchmaker');
+});
+const db     = firebase.database();
+const MM_REF = db.ref('matchmaker');
 
 // Save full matchmaker state to Firebase
 function fbSave() {
   const state = {
     currentMMType,
     randomRound,
-    randomPool: randomPool.map(t => t.id),
+    randomPool:  randomPool.map(t => t.id),
     playedPairs: [...playedPairs],
     matchups,
     robinGroupA,
     robinGroupB,
-    robinTeamsA: (typeof robinTeamsA !== 'undefined' ? robinTeamsA : []).map(t => t.id),
-    robinTeamsB: (typeof robinTeamsB !== 'undefined' ? robinTeamsB : []).map(t => t.id),
+    robinTeamsA: robinTeamsA.map(t => t.id),
+    robinTeamsB: robinTeamsB.map(t => t.id),
   };
-  set(MM_REF, state).catch(err => console.error('Firebase save error:', err));
+  MM_REF.set(state).catch(err => console.error('Firebase save error:', err));
 }
 
 // Delete matchmaker state from Firebase (on reset)
 function fbClear() {
-  remove(MM_REF).catch(err => console.error('Firebase clear error:', err));
+  MM_REF.remove().catch(err => console.error('Firebase clear error:', err));
 }
 
 // Restore a team object from its id using the loaded teams array
@@ -573,7 +569,7 @@ async function init() {
   await fetchTeams(); // load teams first so we can re-link references
 
   // Listen for Firebase matchmaker state (syncs across all users in real time)
-  onValue(MM_REF, (snapshot) => {
+  MM_REF.on('value', (snapshot) => {
     const state = snapshot.val();
     if (!state) return; // nothing saved yet
 
@@ -615,19 +611,6 @@ async function init() {
 }
 
 
-// ── Expose functions to global scope (required for ES module + inline onclick) ──
-window.switchTab        = switchTab;
-window.selectMMType     = selectMMType;
-window.generateMatchups = generateMatchups;
-window.regenerateRandom = regenerateRandom;
-window.resetMatchmaker  = resetMatchmaker;
-window.openMiniWheel    = openMiniWheel;
-window.closeMiniWheel   = closeMiniWheel;
-window.handleMiniOverlayClick = handleMiniOverlayClick;
-window.selectMapChip    = selectMapChip;
-window.setWinner        = setWinner;
-window.toggleWheel      = toggleWheel;
-window.handleOverlayClick = handleOverlayClick;
 
 init();
 setInterval(fetchTeams, 10000);
