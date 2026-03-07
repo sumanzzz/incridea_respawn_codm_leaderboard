@@ -1300,3 +1300,15 @@ input::placeholder,
   .robin-match-cols { grid-template-columns: 1fr; }
   .robin-match-num-center { width: fit-content; }
 }
+
+/* ── Site Logo ── */
+.site-logo {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+  width: 190px;
+  opacity: 0.9;
+  z-index: 100;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+}

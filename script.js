@@ -1,15 +1,64 @@
+// ── Firebase ─────────────────────────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  databaseURL: "https://respawn-codm-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db    = getDatabase(fbApp);
+const MM_REF = ref(db, 'matchmaker');
+
+// Save full matchmaker state to Firebase
+function fbSave() {
+  const state = {
+    currentMMType,
+    randomRound,
+    randomPool: randomPool.map(t => t.id),
+    playedPairs: [...playedPairs],
+    matchups,
+    robinGroupA,
+    robinGroupB,
+    robinTeamsA: (typeof robinTeamsA !== 'undefined' ? robinTeamsA : []).map(t => t.id),
+    robinTeamsB: (typeof robinTeamsB !== 'undefined' ? robinTeamsB : []).map(t => t.id),
+  };
+  set(MM_REF, state).catch(err => console.error('Firebase save error:', err));
+}
+
+// Delete matchmaker state from Firebase (on reset)
+function fbClear() {
+  remove(MM_REF).catch(err => console.error('Firebase clear error:', err));
+}
+
+// Restore a team object from its id using the loaded teams array
+function teamById(id) {
+  return teams.find(t => t.id === id) || null;
+}
+
+// Restore matchup objects (re-link team references from ids)
+function restoreMatchup(m) {
+  return {
+    ...m,
+    teamA: teamById(m.teamA?.id ?? m.teamA) || m.teamA,
+    teamB: m.teamB ? (teamById(m.teamB?.id ?? m.teamB) || m.teamB) : null,
+  };
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
 let teams = [];
 let idCounter = 0;
 let prevOrder = [];
 let currentMMType = 'random';
-let matchups = [];         // { id, teamA, teamB, map }
-let robinGroupA = [];      // matchups for group A
-let robinGroupB = [];      // matchups for group B
+let matchups = [];
+let robinGroupA = [];
+let robinGroupB = [];
 let currentGroup = 'A';
 let activeMiniMatchId = null;
-let playedPairs = new Set();  // tracks "teamA.id|teamB.id" pairs across rounds
-let randomPool = [];          // the pool used for random matchmaking (persists across rounds)
-let randomRound = 1;          // current round number
+let playedPairs = new Set();
+let randomPool = [];
+let randomRound = 1;
+let robinTeamsA = [];
+let robinTeamsB = [];
 
 const API_URL = "https://script.google.com/macros/s/AKfycbwatUeWFm1RvsuB4iESaiikDJuZH-HBoiCViHfhy9blV3F7n5BAsKblEL-i6HznOpko3g/exec";
 
@@ -69,6 +118,7 @@ function generateRandom(pool) {
   document.getElementById('generateAgainWrap').style.display = 'block';
   updateRandomHeader();
   renderMatchGrid(matchups, 'matchGrid');
+  fbSave();
 }
 
 function buildRandomRound() {
@@ -132,7 +182,7 @@ function regenerateRandom() {
   buildRandomRound();
   updateRandomHeader();
   renderMatchGrid(matchups, 'matchGrid');
-  // Scroll to top of results
+  fbSave();
   document.getElementById('mmResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -141,9 +191,6 @@ function updateRandomHeader() {
   document.getElementById('mmResultsSub').textContent =
     `${matchups.length} matchup${matchups.length !== 1 ? 's' : ''} · ${randomPool.length} teams · ${playedPairs.size} pairs played`;
 }
-
-let robinTeamsA = [];
-let robinTeamsB = [];
 
 function generateRobin(pool) {
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
@@ -161,6 +208,7 @@ function generateRobin(pool) {
   document.getElementById('robinLayout').style.display = 'block';
   document.getElementById('generateAgainWrap').style.display = 'none';
   renderRobinSideBySide();
+  fbSave();
 }
 
 function buildRoundRobin(pool, prefix) {
@@ -235,6 +283,7 @@ function setWinner(matchId, winnerName) {
   } else {
     renderRobinSideBySide();
   }
+  fbSave();
 }
 
 function renderMatchGrid(matches, containerId) {
@@ -284,6 +333,7 @@ function renderRobinSideBySide() {
 function resetMatchmaker() {
   matchups = []; robinGroupA = []; robinGroupB = []; robinTeamsA = []; robinTeamsB = [];
   playedPairs = new Set(); randomPool = []; randomRound = 1;
+  fbClear();
   document.getElementById('mmConfig').style.display = 'block';
   document.getElementById('mmResults').style.display = 'none';
   document.getElementById('matchGrid').style.display = 'grid';
@@ -338,6 +388,7 @@ function selectMapChip(el, mapResult) {
     } else {
       renderRobinSideBySide();
     }
+    fbSave();
     closeMiniWheel();
   }, 200);
 }
@@ -518,5 +569,65 @@ document.addEventListener('keydown', e => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-fetchTeams();
+async function init() {
+  await fetchTeams(); // load teams first so we can re-link references
+
+  // Listen for Firebase matchmaker state (syncs across all users in real time)
+  onValue(MM_REF, (snapshot) => {
+    const state = snapshot.val();
+    if (!state) return; // nothing saved yet
+
+    // Restore primitive state
+    currentMMType = state.currentMMType || 'random';
+    randomRound   = state.randomRound   || 1;
+    playedPairs   = new Set(state.playedPairs || []);
+
+    // Restore matchups with full team objects
+    matchups    = (state.matchups    || []).map(restoreMatchup);
+    robinGroupA = (state.robinGroupA || []).map(restoreMatchup);
+    robinGroupB = (state.robinGroupB || []).map(restoreMatchup);
+
+    // Restore pool and robin team lists
+    randomPool  = (state.randomPool  || []).map(teamById).filter(Boolean);
+    robinTeamsA = (state.robinTeamsA || []).map(teamById).filter(Boolean);
+    robinTeamsB = (state.robinTeamsB || []).map(teamById).filter(Boolean);
+
+    // Show the results UI
+    document.getElementById('mmConfig').style.display = 'none';
+    document.getElementById('mmResults').style.display = 'block';
+
+    if (currentMMType === 'random') {
+      document.getElementById('matchGrid').style.display = 'grid';
+      document.getElementById('robinLayout').style.display = 'none';
+      document.getElementById('generateAgainWrap').style.display = 'block';
+      updateRandomHeader();
+      renderMatchGrid(matchups, 'matchGrid');
+    } else {
+      document.getElementById('matchGrid').style.display = 'none';
+      document.getElementById('robinLayout').style.display = 'block';
+      document.getElementById('generateAgainWrap').style.display = 'none';
+      document.getElementById('mmResultsLabel').textContent = 'ROUND ROBIN';
+      document.getElementById('mmResultsSub').textContent =
+        `Group A: ${robinTeamsA.length} teams (${robinGroupA.length} matches) · Group B: ${robinTeamsB.length} teams (${robinGroupB.length} matches)`;
+      renderRobinSideBySide();
+    }
+  });
+}
+
+
+// ── Expose functions to global scope (required for ES module + inline onclick) ──
+window.switchTab        = switchTab;
+window.selectMMType     = selectMMType;
+window.generateMatchups = generateMatchups;
+window.regenerateRandom = regenerateRandom;
+window.resetMatchmaker  = resetMatchmaker;
+window.openMiniWheel    = openMiniWheel;
+window.closeMiniWheel   = closeMiniWheel;
+window.handleMiniOverlayClick = handleMiniOverlayClick;
+window.selectMapChip    = selectMapChip;
+window.setWinner        = setWinner;
+window.toggleWheel      = toggleWheel;
+window.handleOverlayClick = handleOverlayClick;
+
+init();
 setInterval(fetchTeams, 10000);
