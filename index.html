@@ -1,208 +1,369 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Respawn</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Respawn</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <video class="bg-video" autoplay muted loop playsinline>
+      <source src="bg_video.mp4" type="video/mp4" />
+    </video>
+    <div class="bg-video-overlay"></div>
 
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
 
-  <div class="page-wrap" id="pageWrap">
-    <div class="container">
+    <div class="page-wrap" id="pageWrap">
+      <div class="container">
+        <!-- Header -->
+        <header class="header">
+          <h2>RESPAWN</h2>
+          <img src="cod.png" alt="COD logo" class="cod-center-logo" />
+          <div class="header-line"></div>
+        </header>
 
-      <!-- Header -->
-      <header class="header">
-        <div class="header-label">Incridea</div>
-        <h1>Respawn - CODM</h1>
-        <div class="header-line"></div>
-      </header>
-
-      <!-- Segmented Control -->
-      <div class="seg-control">
-        <div class="seg-slider" id="segSlider"></div>
-        <button class="seg-btn active" id="segLeaderboard" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
-        <button class="seg-btn" id="segMatchmaker" onclick="switchTab('matchmaker')">⚔️ Matchmaker</button>
-      </div>
-
-      <!-- ── LEADERBOARD TAB ── -->
-      <div id="tabLeaderboard" class="tab-content active">
-        <div class="stats-bar">
-          <div class="stat">
-            <span class="stat-num" id="statTeams">0</span>
-            <span class="stat-label">Teams</span>
-          </div>
+        <!-- Segmented Control -->
+        <div class="seg-control">
+          <div class="seg-slider" id="segSlider"></div>
+          <button
+            class="seg-btn active"
+            id="segLeaderboard"
+            onclick="switchTab('leaderboard')"
+          >
+            🏆 Leaderboard
+          </button>
+          <button
+            class="seg-btn"
+            id="segMatchmaker"
+            onclick="switchTab('matchmaker')"
+          >
+            ⚔️ Matchmaker
+          </button>
         </div>
-        <div class="leaderboard" id="leaderboard">
-          <div class="empty-state">
-            <span class="empty-icon">🏆</span>
-            <p>Fetching teams...</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- ── MATCHMAKER TAB ── -->
-      <div id="tabMatchmaker" class="tab-content">
-
-        <!-- Step 1: Config -->
-        <div class="mm-config" id="mmConfig">
-          <div class="mm-config-title">
-            <span class="mm-config-label">// Setup</span>
-            <div class="mm-config-heading">MATCHMAKER</div>
-          </div>
-
-          <div class="mm-config-row">
-            <div class="mm-field">
-              <label>Number of Top Teams</label>
-              <input type="number" id="mmTeamCount" placeholder="e.g. 14" min="2" max="100" />
+        <!-- ── LEADERBOARD TAB ── -->
+        <div id="tabLeaderboard" class="tab-content active">
+          <div class="stats-bar">
+            <div class="stat">
+              <span class="stat-num" id="statTeams">0</span>
+              <span class="stat-label">Teams</span>
             </div>
-            <div class="mm-field">
-              <label>Matchmaking Type</label>
-              <div class="mm-type-btns">
-                <button class="mm-type-btn active" id="mmTypeRandom" onclick="selectMMType('random')">🎲 Random</button>
-                <button class="mm-type-btn" id="mmTypeRobin" onclick="selectMMType('robin')">🔄 Round Robin</button>
+          </div>
+          <div class="leaderboard" id="leaderboard">
+            <div class="empty-state">
+              <span class="empty-icon">🏆</span>
+              <p>Fetching teams...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── MATCHMAKER TAB ── -->
+        <div id="tabMatchmaker" class="tab-content">
+          <!-- Step 1: Config -->
+          <div class="mm-config" id="mmConfig">
+            <div class="mm-config-title">
+              <span class="mm-config-label">// Setup</span>
+              <div class="mm-config-heading">MATCHMAKER</div>
+            </div>
+
+            <div class="mm-config-row">
+              <div class="mm-field">
+                <label>Number of Top Teams</label>
+                <input
+                  type="number"
+                  id="mmTeamCount"
+                  placeholder="e.g. 14"
+                  min="2"
+                  max="100"
+                />
+              </div>
+              <div class="mm-field">
+                <label>Matchmaking Type</label>
+                <div class="mm-type-btns">
+                  <button
+                    class="mm-type-btn active"
+                    id="mmTypeRandom"
+                    onclick="selectMMType('random')"
+                  >
+                    🎲 Random
+                  </button>
+                  <button
+                    class="mm-type-btn"
+                    id="mmTypeRobin"
+                    onclick="selectMMType('robin')"
+                  >
+                    🔄 Round Robin
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <button class="mm-generate-btn" onclick="generateMatchups()">GENERATE MATCHUPS →</button>
-        </div>
-
-        <!-- Step 2: Results -->
-        <div class="mm-results" id="mmResults" style="display:none">
-          <div class="mm-results-header">
-            <div>
-              <div class="mm-results-label" id="mmResultsLabel">RANDOM MATCHUPS</div>
-              <div class="mm-results-sub" id="mmResultsSub"></div>
-            </div>
-            <button class="mm-reset-btn" onclick="resetMatchmaker()">↩ RESET</button>
-          </div>
-
-          <!-- Random matchups (single grid) -->
-          <div class="match-grid" id="matchGrid"></div>
-
-          <!-- Generate Again button (random only) -->
-          <div id="generateAgainWrap" style="display:none; margin-top:20px;">
-            <button class="generate-again-btn" onclick="regenerateRandom()">
-              🔀 Generate Again
-              <span class="generate-again-sub">Previous matchups won't repeat</span>
+            <button class="mm-generate-btn" onclick="generateMatchups()">
+              GENERATE MATCHUPS →
             </button>
           </div>
 
-          <!-- Round Robin side-by-side layout -->
-          <div id="robinLayout" style="display:none">
-
-            <!-- Team lists -->
-            <div class="robin-team-lists">
-              <div class="robin-team-list-col">
-                <div class="robin-col-header"><span class="robin-col-label">Group A</span></div>
-                <div class="robin-team-list" id="robinTeamListA"></div>
+          <!-- Step 2: Results -->
+          <div class="mm-results" id="mmResults" style="display: none">
+            <div class="mm-results-header">
+              <div>
+                <div class="mm-results-label" id="mmResultsLabel">
+                  RANDOM MATCHUPS
+                </div>
+                <div class="mm-results-sub" id="mmResultsSub"></div>
               </div>
-              <div class="robin-team-list-col">
-                <div class="robin-col-header"><span class="robin-col-label">Group B</span></div>
-                <div class="robin-team-list" id="robinTeamListB"></div>
-              </div>
+              <button class="mm-reset-btn" onclick="resetMatchmaker()">
+                ↩ RESET
+              </button>
             </div>
 
-            <!-- Matches divider -->
-            <div class="robin-matches-divider">
-              <div class="robin-matches-divider-line"></div>
-              <span class="robin-matches-divider-label">Matches</span>
-              <div class="robin-matches-divider-line"></div>
+            <!-- Random matchups (single grid) -->
+            <div class="match-grid" id="matchGrid"></div>
+
+            <!-- Generate Again button (random only) -->
+            <div id="generateAgainWrap" style="display: none; margin-top: 20px">
+              <button class="generate-again-btn" onclick="regenerateRandom()">
+                🔀 Generate Again
+                <span class="generate-again-sub"
+                  >Previous matchups won't repeat</span
+                >
+              </button>
             </div>
 
-            <!-- Match rows: Card A | Match N | Card B -->
-            <div id="robinMatchRows"></div>
+            <!-- Round Robin side-by-side layout -->
+            <div id="robinLayout" style="display: none">
+              <!-- Team lists -->
+              <div class="robin-team-lists">
+                <div class="robin-team-list-col">
+                  <div class="robin-col-header">
+                    <span class="robin-col-label">Group A</span>
+                  </div>
+                  <div class="robin-team-list" id="robinTeamListA"></div>
+                </div>
+                <div class="robin-team-list-col">
+                  <div class="robin-col-header">
+                    <span class="robin-col-label">Group B</span>
+                  </div>
+                  <div class="robin-team-list" id="robinTeamListB"></div>
+                </div>
+              </div>
 
+              <!-- Matches divider -->
+              <div class="robin-matches-divider">
+                <div class="robin-matches-divider-line"></div>
+                <span class="robin-matches-divider-label">Matches</span>
+                <div class="robin-matches-divider-line"></div>
+              </div>
+
+              <!-- Match rows: Card A | Match N | Card B -->
+              <div id="robinMatchRows"></div>
+            </div>
           </div>
         </div>
-
-      </div><!-- end matchmaker tab -->
-
-    </div>
-  </div>
-
-  <!-- Floating Map & Mode Button -->
-  <button class="wheel-fab" id="wheelBtn" onclick="toggleWheel()" title="Map & Mode Selection">
-    <span class="wheel-fab-icon">🎡</span>
-    <span class="wheel-fab-label">MAP & MODE</span>
-  </button>
-
-  <!-- Picker Wheel Modal -->
-  <div class="wheel-overlay" id="wheelOverlay" onclick="handleOverlayClick(event)">
-    <div class="wheel-modal" id="wheelModal">
-      <button class="wheel-close" onclick="toggleWheel()">✕</button>
-      <div class="wheel-title">
-        <span class="wheel-title-label">// Map Selection</span>
-        <div class="wheel-title-text">SPIN THE WHEEL</div>
-      </div>
-      <iframe
-        src="https://pickerwheel.com/emb/?choices=Hardpoint%20-%20Raid,Hardpoint%20-%20Nuketown,Hardpoint%20-%20Summit,Hardpoint%20-%20Firing%20range,Hardpoint%20-%20Crash,Hardpoint%20-%20Shoot%20House,Domination%20-%20Nuketown,Domination%20-%20Firing%20range,Domination%20-%20Cross%20fire,Domination%20-%20Raid,Domination%20-%20Apocalypse,Domination%20-%20Standoff,Search%20and%20Destroy%20-%20Standoff,Search%20and%20Destroy%20-%20Crash,Search%20and%20Destroy%20-%20Summit,Search%20and%20Destroy%20-%20Firing%20range,Search%20and%20Destroy%20-%20Raid,Search%20and%20destroy%20-%20Hackney%20Yard,Search%20and%20destroy%20-%20Tunsia&confetti=true"
-        width="100%"
-        height="620px"
-        scrolling="no"
-        frameborder="0"
-        id="wheelFrame"
-      ></iframe>
-    </div>
-  </div>
-
-  <!-- Mini Wheel Modal (per match card) -->
-  <div class="wheel-overlay" id="miniWheelOverlay" onclick="handleMiniOverlayClick(event)">
-    <div class="wheel-modal" id="miniWheelModal">
-      <button class="wheel-close" onclick="closeMiniWheel()">✕</button>
-      <div class="wheel-title">
-        <span class="wheel-title-label" id="miniWheelMatchLabel">// Match 1</span>
-        <div class="wheel-title-text">SELECT MAP & MODE</div>
-      </div>
-      <iframe
-        src="https://pickerwheel.com/emb/?choices=Hardpoint%20-%20Raid,Hardpoint%20-%20Nuketown,Hardpoint%20-%20Summit,Hardpoint%20-%20Firing%20range,Hardpoint%20-%20Crash,Hardpoint%20-%20Shoot%20House,Domination%20-%20Nuketown,Domination%20-%20Firing%20range,Domination%20-%20Cross%20fire,Domination%20-%20Raid,Domination%20-%20Apocalypse,Domination%20-%20Standoff,Search%20and%20Destroy%20-%20Standoff,Search%20and%20Destroy%20-%20Crash,Search%20and%20Destroy%20-%20Summit,Search%20and%20Destroy%20-%20Firing%20range,Search%20and%20Destroy%20-%20Raid,Search%20and%20destroy%20-%20Hackney%20Yard,Search%20and%20destroy%20-%20Tunsia&confetti=true"
-        width="100%"
-        height="620px"
-        scrolling="no"
-        frameborder="0"
-        id="miniWheelFrame"
-      ></iframe>
-      <div class="mini-wheel-footer">
-        <div class="chip-section-label">Hardpoint</div>
-        <div class="chip-group">
-          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Raid')">Raid</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Nuketown')">Nuketown</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Summit')">Summit</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Firing Range')">Firing Range</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Crash')">Crash</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Hardpoint - Shoot House')">Shoot House</button>
-        </div>
-        <div class="chip-section-label">Domination</div>
-        <div class="chip-group">
-          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Nuketown')">Nuketown</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Firing Range')">Firing Range</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Cross Fire')">Cross Fire</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Raid')">Raid</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Apocalypse')">Apocalypse</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Domination - Standoff')">Standoff</button>
-        </div>
-        <div class="chip-section-label">Search & Destroy</div>
-        <div class="chip-group">
-          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Standoff')">Standoff</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Crash')">Crash</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Summit')">Summit</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Firing Range')">Firing Range</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Raid')">Raid</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Hackney Yard')">Hackney Yard</button>
-          <button class="map-chip" onclick="selectMapChip(this, 'Search & Destroy - Tunisia')">Tunisia</button>
-        </div>
+        <!-- end matchmaker tab -->
       </div>
     </div>
-  </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-  <script src="script.js"></script>
-</body>
+    <!-- Floating Map & Mode Button -->
+    <button
+      class="wheel-fab"
+      id="wheelBtn"
+      onclick="toggleWheel()"
+      title="Map & Mode Selection"
+    >
+      <span class="wheel-fab-icon">🎡</span>
+      <span class="wheel-fab-label">MAP & MODE</span>
+    </button>
+
+    <!-- Picker Wheel Modal -->
+    <div
+      class="wheel-overlay"
+      id="wheelOverlay"
+      onclick="handleOverlayClick(event)"
+    >
+      <div class="wheel-modal" id="wheelModal">
+        <button class="wheel-close" onclick="toggleWheel()">✕</button>
+        <div class="wheel-title">
+          <span class="wheel-title-label">// Map Selection</span>
+          <div class="wheel-title-text">SPIN THE WHEEL</div>
+        </div>
+        <iframe
+          src="https://pickerwheel.com/emb/?choices=Hardpoint%20-%20Raid,Hardpoint%20-%20Nuketown,Hardpoint%20-%20Summit,Hardpoint%20-%20Firing%20range,Hardpoint%20-%20Crash,Hardpoint%20-%20Shoot%20House,Domination%20-%20Nuketown,Domination%20-%20Firing%20range,Domination%20-%20Cross%20fire,Domination%20-%20Raid,Domination%20-%20Apocalypse,Domination%20-%20Standoff,Search%20and%20Destroy%20-%20Standoff,Search%20and%20Destroy%20-%20Crash,Search%20and%20Destroy%20-%20Summit,Search%20and%20Destroy%20-%20Firing%20range,Search%20and%20Destroy%20-%20Raid,Search%20and%20destroy%20-%20Hackney%20Yard,Search%20and%20destroy%20-%20Tunsia&confetti=true"
+          width="100%"
+          height="620px"
+          scrolling="no"
+          frameborder="0"
+          id="wheelFrame"
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- Mini Wheel Modal (per match card) -->
+    <div
+      class="wheel-overlay"
+      id="miniWheelOverlay"
+      onclick="handleMiniOverlayClick(event)"
+    >
+      <div class="wheel-modal" id="miniWheelModal">
+        <button class="wheel-close" onclick="closeMiniWheel()">✕</button>
+        <div class="wheel-title">
+          <span class="wheel-title-label" id="miniWheelMatchLabel"
+            >// Match 1</span
+          >
+          <div class="wheel-title-text">SELECT MAP & MODE</div>
+        </div>
+        <iframe
+          src="https://pickerwheel.com/emb/?choices=Hardpoint%20-%20Raid,Hardpoint%20-%20Nuketown,Hardpoint%20-%20Summit,Hardpoint%20-%20Firing%20range,Hardpoint%20-%20Crash,Hardpoint%20-%20Shoot%20House,Domination%20-%20Nuketown,Domination%20-%20Firing%20range,Domination%20-%20Cross%20fire,Domination%20-%20Raid,Domination%20-%20Apocalypse,Domination%20-%20Standoff,Search%20and%20Destroy%20-%20Standoff,Search%20and%20Destroy%20-%20Crash,Search%20and%20Destroy%20-%20Summit,Search%20and%20Destroy%20-%20Firing%20range,Search%20and%20Destroy%20-%20Raid,Search%20and%20destroy%20-%20Hackney%20Yard,Search%20and%20destroy%20-%20Tunsia&confetti=true"
+          width="100%"
+          height="620px"
+          scrolling="no"
+          frameborder="0"
+          id="miniWheelFrame"
+        ></iframe>
+        <div class="mini-wheel-footer">
+          <div class="chip-section-label">Hardpoint</div>
+          <div class="chip-group">
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Hardpoint - Raid')"
+            >
+              Raid
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Hardpoint - Nuketown')"
+            >
+              Nuketown
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Hardpoint - Summit')"
+            >
+              Summit
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Hardpoint - Firing Range')"
+            >
+              Firing Range
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Hardpoint - Crash')"
+            >
+              Crash
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Hardpoint - Shoot House')"
+            >
+              Shoot House
+            </button>
+          </div>
+          <div class="chip-section-label">Domination</div>
+          <div class="chip-group">
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Domination - Nuketown')"
+            >
+              Nuketown
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Domination - Firing Range')"
+            >
+              Firing Range
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Domination - Cross Fire')"
+            >
+              Cross Fire
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Domination - Raid')"
+            >
+              Raid
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Domination - Apocalypse')"
+            >
+              Apocalypse
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Domination - Standoff')"
+            >
+              Standoff
+            </button>
+          </div>
+          <div class="chip-section-label">Search & Destroy</div>
+          <div class="chip-group">
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Search & Destroy - Standoff')"
+            >
+              Standoff
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Search & Destroy - Crash')"
+            >
+              Crash
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Search & Destroy - Summit')"
+            >
+              Summit
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Search & Destroy - Firing Range')"
+            >
+              Firing Range
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Search & Destroy - Raid')"
+            >
+              Raid
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Search & Destroy - Hackney Yard')"
+            >
+              Hackney Yard
+            </button>
+            <button
+              class="map-chip"
+              onclick="selectMapChip(this, 'Search & Destroy - Tunisia')"
+            >
+              Tunisia
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <img
+      src="incridea.png"
+      alt="Incridea corner decoration"
+      class="corner-top-left"
+    />
+    <img src="c2.png" alt="Corner decoration left" class="corner-bottom-left" />
+    <img src="c1.png" alt="Corner decoration" class="corner-image" />
+    <script src="script.js"></script>
+  </body>
 </html>
